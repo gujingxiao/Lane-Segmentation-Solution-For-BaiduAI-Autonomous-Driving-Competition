@@ -19,3 +19,18 @@ Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competit
 【6】数据清洗上，最一开始我采用了全部数据训练，发现loss经常出现不规则的跳动，经过排查，我发现road 3存在几乎一半以上图像过曝的问题，并且road 3大多在强光下拍摄，不符合测试集的分布，所以我很果断的舍弃了road 3，分数也提升了0.01左右（好神奇。。。）。
 
 【7】数据增强上，由于第五类和第八类训练数据较少（但是测试集中占比不少），所以针对这两类，我采用了iaa的图像处理，从亮度、饱和度、噪点、对比度、crop、scale等方面做了共计12000张图片的增强。最后我排查了一遍road 2和road 4，把一些错误和过曝的图片都删掉了，最终保留了56000张图片（包括数据增强的图片）进行训练。
+
+【8】训练时我采用上述分辨率，但是在实际提交结果时，我会添加一层bilinear，直接将结果缩放到3384x1020，实测结果会有0.005左右的提升
+
+【9】最终的融合我先使用每个模型将每个test image的结果保存为1536x512x8的npy文件，然后加载test image的三个模型的npy文件进行丘平均值，然后创建了一个bilinearNet将结果缩放成3384x1020，再将之前裁掉的3384x690的背景与结果拼接，得到最终的预测结果。
+
+### 模型记录
+
+|Models|Loss Function|Base LR|Batch Size|Resolution|Miou|
+|:---|:---|:---|:---|:---|:---|
+|Unet-base|bce + dice|0.001|8|768 x 256|0.52231|
+|Unet-base|bce + dice|0.001|4|1024 x 384|0.55136|
+|Unet-base|bce + dice|0.001|2|1536 x 512|0.60577|
+|Unet-Simple|bce + dice|0.001|2|1536 x 512|0.60223|
+|Deeplabv3p|bce + dice|0.001|2|1536 x 512|0.59909|
+|Ensemble|-|-|-|1536 x 512|0.61234|
