@@ -1,7 +1,7 @@
 # Lane-Segmentation-Solution-For-Baidu-PaddlePaddle-Autonomous-Driving-Competition
 Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competition
 
-用英文写太麻烦了，还是用母语吧。[无人车车道线检测挑战赛](http://aistudio.baidu.com/aistudio/#/competition/detail/5),为了这个比赛硬生生在四个月中初步了解了PaddlePaddle，并且能够学以致用，也算是收获颇多。最终以0.61234分数取得第三名，ID为Seigato（还有个0.62447的分数，没上传，然而传了也没有什么用处了）。
+用英文写太麻烦了，还是用母语吧。[无人车车道线检测挑战赛](http://aistudio.baidu.com/aistudio/#/competition/detail/5),为了这个比赛硬生生在四个月中初步了解了PaddlePaddle，并且能够学以致用，也算是收获颇多。最终以0.61234分数取得第三名，ID为Seigato（还有个0.62447的分数，没上传，然而传了也没有什么用处了；预训练模型将在结果公布后release）。
 
 ### 总体描述
 本次比赛图像分辨率非常的大，3384x1710，我的设备是两块1070Ti，可用显存15.6G，无奈只好忍痛缩小图像。下面说下主要思路：
