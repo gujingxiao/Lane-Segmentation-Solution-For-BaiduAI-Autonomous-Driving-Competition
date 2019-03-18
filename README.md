@@ -1,10 +1,10 @@
 # Lane-Segmentation-Solution-For-Baidu-PaddlePaddle-Autonomous-Driving-Competition
 Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competition
 
-用英文写太麻烦了，还是用母语吧。[无人车车道线检测挑战赛](http://aistudio.baidu.com/aistudio/#/competition/detail/5),为了这个比赛硬生生在四个月中初步了解了PaddlePaddle，并且能够学以致用，也算是收获颇多。
+用英文写太麻烦了，还是用母语吧。[无人车车道线检测挑战赛](http://aistudio.baidu.com/aistudio/#/competition/detail/5),为了这个比赛硬生生在四个月中初步了解了PaddlePaddle，并且能够学以致用，也算是收获颇多。最终以0.61234分数取得第三名，ID为Seigato（还有个0.62447的分数，没上传，然而传了也没有什么用处了）。
 
 ### 总体描述
-本次比赛图像分辨率非常的大，3384x1710，对于我这个只拥有两块1070Ti的人来说，只好忍痛缩小图像。下面说下我的几个主要思路吧：
+本次比赛图像分辨率非常的大，3384x1710，我的设备是两块1070Ti，可用显存15.6G，无奈只好忍痛缩小图像。下面说下我的几个主要思路吧：
 
 【1】经过对label的分析，我首先裁掉了图片最上部的3384x690的图像，因为这部分都是天空和树木，没有正样本的存在，裁掉后还可以减小图像的压缩比例，一举两得。
 
@@ -22,7 +22,7 @@ Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competit
 
 【8】训练时我采用上述分辨率，但是在实际提交结果时，我会添加一层bilinear，直接将结果缩放到3384x1020，实测结果会有0.005左右的提升
 
-【9】最终的融合我先使用每个模型将每个test image的结果保存为1536x512x8的npy文件，然后加载test image的三个模型的npy文件进行丘平均值，然后创建了一个bilinearNet将结果缩放成3384x1020，再将之前裁掉的3384x690的背景与结果拼接，得到最终的预测结果。
+【9】最终的融合我先使用每个模型将每个test image的结果保存为1536x512x8的npy文件，然后加载test image的三个模型的npy文件进行求平均值，然后创建了一个bilinearNet将结果缩放成3384x1020，再将之前裁掉的3384x690的背景与结果拼接，得到最终的预测结果。
 
 ### 模型记录
 
@@ -34,3 +34,66 @@ Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competit
 |Unet-Simple|bce + dice|0.001|2|1536 x 512|0.60223|
 |Deeplabv3p|bce + dice|0.001|2|1536 x 512|0.59909|
 |Ensemble|-|-|-|1536 x 512|0.61234|
+
+### 依赖说明
+    Python 3.6
+    opencv-python 3.4.3.18
+    paddlepaddle-gpu 1.3.0.post97
+    imgaug 0.2.7
+
+### 代码结构
+    |Projects - |data_list - train.csv  训练集数据路径
+                           - val.csv  验证集数据路径
+                       
+                |model_weights - paddle_deeplabv3p  模型权重文件存放
+                               - paddle_unet_base
+                               - paddle_unet_simple
+                               
+                |models - deeplabv3p.py  模型deeplabv3p.py结构
+                        - unet_base.py   模型unet_base.py结构
+                        - unet_simple.py  模型unet_simple.py结构
+                        
+                |utils  - data_feeder.py  数据读取、生成
+                        - image_process.py  数据预处理
+                        - make_lists.py   生成数据列表
+                        - process_labels.py  label的编解码
+                        
+                |ensemble.py   模型融合代码
+                
+                |train.py   训练脚本
+                
+                |val_inference.py  验证及生成提交数据脚本
+                
+### 使用说明
+不论是训练还是验证，首先都要使用utils/make_lists.py脚本，将路径配好，生成存储数据路径的csv文件
+#### 训练
+【1】 首先在train.py中配好data_dir、save_model_path、model_path的路径，保证数据读取和存储都不会存在问题
+
+【2】 配置IMG_SIZE，默认(1536,512)；配置base_lr，默认0.001;并修改需要使用的network（可选项为deeplabv3p，unet_base，unet_simple）
+
+【3】 确定crop_offset，就是解决方案中说的裁掉天空和树木，这里默认是690；确定log_iters打印时间和save_model_iters的模型存储时间
+
+【4】 配置好后就可以运行train.py训练了（需说明的是我采用的是双卡训练，采用的是fluid.ParallelExecutor，batch_size需要为偶数，如果是单卡训练，需要修改部分代码）
+
+#### 验证
+【1】 与训练类似，配置上述参数；并将program_choice = 1，开启validation功能
+
+【2】 确定model_path和network，并可以选择是否显示prediction与ground truth的对比
+
+【3】 一切配置好后，运行val_inference.py即可
+
+#### 测试结果生成
+【1】 与验证类似，配置上述参数；并将program_choice = 2，开启Test功能
+
+【2】 脚本中有一个save_test_logits参数，当False时，仅保存单模型预测结果的png；如果是True，将会保存单模型预测结果的npy文件，用于最终ensemble使用
+
+【3】 test_dir需要指定验证集图片保存的文件夹，脚本会自动获取路径
+
+【4】 一切配置好后，运行val_inference.py即可；等运行完毕，将生成的预测png文件夹打包压缩，按照官方说明，提交成绩即可
+
+#### 模型融合
+【1】 与上述类似，配置测试集路径，分辨率等参数
+
+【2】 在model_lists中输入三个模型生成的npy文件路径，配置好后根据路径数量调整求均值的响应策略
+
+【3】 配置好后，运行ensemble.py即可；运行完毕后，将生成的预测png文件夹打包压缩，按照官方说明，提交成绩即可
