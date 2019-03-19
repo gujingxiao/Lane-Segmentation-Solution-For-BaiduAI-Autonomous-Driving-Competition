@@ -1,7 +1,7 @@
 # Lane-Segmentation-Solution-For-Baidu-PaddlePaddle-Autonomous-Driving-Competition
 Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competition
 
-用英文写太麻烦了，还是用母语吧。[无人车车道线检测挑战赛](http://aistudio.baidu.com/aistudio/#/competition/detail/5),为了这个比赛硬生生在四个月中初步了解了PaddlePaddle，并且能够学以致用，也算是收获颇多。最终以0.61234分数取得第三名，ID为Seigato（还有个0.62447的分数，没上传，然而传了也没有什么用处了；预训练模型将在结果公布后release）。
+用英文写太麻烦了，还是用母语吧。[无人车车道线检测挑战赛](http://aistudio.baidu.com/aistudio/#/competition/detail/5),为了这个比赛硬生生在四个月中初步了解了PaddlePaddle，并且能够学以致用，也算是收获颇多。最终以0.63547分数取得第一名，ID为Seigato（预训练模型将在稍后release）。
 
 ### 总体描述
 本次比赛图像分辨率非常的大，3384x1710，我的设备是两块1070Ti，可用显存15.6G，无奈只好忍痛缩小图像。下面说下主要思路：
@@ -24,6 +24,8 @@ Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competit
 
 【9】最终的融合先使用每个模型将每个test image的结果保存为1536x512x8的npy文件，然后加载test image的三个模型的npy文件进行求平均值，然后创建了一个bilinearNet将结果缩放成3384x1020，再将之前裁掉的3384x690的背景与结果拼接，得到最终的预测结果。
 
+【10】【最终夺冠关键】当完成了1-9步骤后，得到的分数是0.61234分，位列第三，但是local CV的结果却不应该对应这个分数，于是我将label叠加到了原图上，发现了一个巨大的问题，由于我训练的分辨率为1536x512，原始图像为3384x1020，我首先使用了最邻近插值来缩放label，但是后来在生成结果时，却使用了bilinear，再加上本身分辨率并不是能够被原始分辨率整除，导致了我所有的prediction都向图像右侧偏移了4-5个像素。于是在results_correction.py中，我将label进行了位置修正，当使用4个像素修正时，得到了当前的0.63547分。（Note：如果使用原始图像训练、或者使用恰好被二整除关系的分辨率训练则不会出现这个问题，主要还是我设计的unet有点小问题，所以无法这样训练）
+
 ### 模型记录
 
 |Models|Loss Function|Base LR|Batch Size|Resolution|Miou|
@@ -34,6 +36,7 @@ Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competit
 |Unet-Simple|bce + dice|0.001|2|1536 x 512|0.60223|
 |Deeplabv3p|bce + dice|0.001|2|1536 x 512|0.59909|
 |Ensemble|-|-|-|1536 x 512|0.61234|
+|Correction|-|-|-|1536 x 512|0.63547|
 
 ### 依赖说明
     Python 3.6
@@ -63,6 +66,8 @@ Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competit
                 |train.py   训练脚本
                 
                 |val_inference.py  验证及生成提交数据脚本
+                
+                |results_correction.py  修正预测值位置
                 
 ### 使用说明
     不论是训练还是验证，首先都要使用utils/make_lists.py脚本，将路径配好，生成存储数据路径的csv文件
@@ -97,3 +102,10 @@ Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competit
     【2】 在model_lists中输入三个模型生成的npy文件路径，配置好后根据路径数量调整求均值的响应策略
 
     【3】 配置好后，运行ensemble.py即可；运行完毕后，将生成的预测png文件夹打包压缩，按照官方说明，提交成绩即可
+    
+#### 标签修正
+    【1】 将测试集路径、原始预测标签路径、生成修正标签路径配好
+    
+    【2】 调整offset值，单位为像素；默认值为4
+    
+    【3】 配置好后，运行results_correction.py即可；运行完毕后，将生成的新修正预测png打包压缩，按照官方说明，提交成绩即可
