@@ -1,5 +1,5 @@
-# Lane-Segmentation-Solution-For-Baidu-PaddlePaddle-Autonomous-Driving-Competition
-Lane Segmentation Solution for Baidu AI PaddlePaddle Autonomous Driving Competition
+# Lane-Segmentation-Solution-For-BaiduAI-Autonomous-Driving-Competition
+Lane Segmentation 1st Place Solution for Baidu AI PaddlePaddle Autonomous Driving Competition
 
 用英文写太麻烦了，还是用母语吧。[无人车车道线检测挑战赛](http://aistudio.baidu.com/aistudio/#/competition/detail/5),为了这个比赛硬生生在四个月中初步了解了PaddlePaddle，并且能够学以致用，也算是收获颇多。最终以0.63547分数取得第一名，ID为Seigato（预训练模型将在稍后release）。
 
