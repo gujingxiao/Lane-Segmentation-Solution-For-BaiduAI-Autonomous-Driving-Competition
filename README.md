@@ -2,6 +2,9 @@
 Lane Segmentation 1st Place Solution for Baidu AI PaddlePaddle Autonomous Driving Competition
 [无人车车道线检测挑战赛](http://aistudio.baidu.com/aistudio/#/competition/detail/5),为了推广并进一步优化PaddlePaddle，本次比赛的训练框架也被确定为使用PaddlePaddle。在为期四个月的比赛中，初步了解了PaddlePaddle，并且能够学以致用，收获颇多。最终以0.63547分数取得第一名，ID为Seigato。
 
+### 请使用者注意
+近期我注意到[2020中国华录杯·数据湖算法大赛—定向算法赛（车道线识别）](https://dev.ehualu.com/dev/home/competition/competitionDetail?competitionId=1)比赛正在进行中，其比赛数据为Baidu提供，竞赛框架也是PaddlePaddle，数据和标注情况与无人车车道线检测挑战赛高度一致。很多参赛者通过邮件询问是否可以使用本解决方案作为参考来参赛。我的答案是肯定的，本解决方案是开源的，欢迎广大开发者使用并提出宝贵意见，考虑到竞赛相关规程与条款，请使用者遵照竞赛要求，在最终方案介绍的引用处添加本工程链接作为说明和解释，以防止因此而出现不必要的麻烦。谢谢，并预祝各位取得好成绩。
+
 ### 总体描述
 本次比赛图像分辨率非常的大，3384x1710，我的设备是两块1070Ti，可用显存15.6G，无奈只好忍痛缩小图像。下面说下主要思路：
 
